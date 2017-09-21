@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>sqlcomp report</title>
+  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+  <style>
+    section { margin: 50px 60px; }
+    td { vertical-align: top;}
+    .identical { color: #ccc; }
+    .left-only { color: blue; }
+    .right-only { color: purple; }
+    .different { color: red; }
+  </style>
+</head>
+<body>
+  
+  <section>
+
+    <h1>sqlcomp report</h1>
+    <h2>comparing `{{ db1Name }}` and `{{ db2Name }}`</h2>
+
+    <table class="pure-table">
+      <thead>
+        <tr>
+          <th>table_name</th>
+          <th>comparison</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {{#each tables }}
+        <tr class="{{outcome}}">
+          <td>{{ name }}</td>
+          <td>
+            {{ outcome }} 
+            {{#if columnDiffs}}
+              <div class="column-diffs">
+                <table class="pure-table">
+                  <thead>
+                    <tr>
+                      <th>column_name</th>
+                      <th>comparison</th>
+                      <th>property</th>
+                      <th>value left</th>
+                      <th>value right</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {{#each columnDiffs }}
+                    <tr class="{{ outcome }}">
+                      <td>{{columnName}}</td>
+                      <td>{{outcome}}</td>
+                      <td>{{property}}</td>
+                      <td>{{value1}}</td>
+                      <td>{{value2}}</td>
+                    </tr>
+                  {{/each}}
+                  </tbody>
+                </table>
+              </div>
+            {{/if}}
+          </td>
+        </tr>
+        {{/each}}
+
+      </tbody>
+    </table>
+  </section>
+
+</body>
+</html>

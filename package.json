@@ -1,0 +1,22 @@
+{
+  "name": "sqlcomp",
+  "version": "0.1.0",
+  "description": "Compares MySQL databases using info in `information_schema` queries",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "toddwprice",
+  "license": "MIT",
+  "bin": {
+    "sqlcomp": "./index.js"
+  },
+  "dependencies": {
+    "chalk": "^2.1.0",
+    "commander": "^2.11.0",
+    "fs-extra": "^4.0.2",
+    "handlebars": "^4.0.10",
+    "mysql": "^2.14.1",
+    "open": "^0.0.5"
+  }
+}
