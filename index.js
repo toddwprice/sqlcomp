@@ -1,3 +1,5 @@
+'use strict';
+
 const commander = require('commander');
 const pkg = require('./package.json');
 const sqlcomp = require('./sqlcomp');
