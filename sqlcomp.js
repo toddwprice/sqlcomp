@@ -15,7 +15,7 @@ const DEBUG_LEVELS = {
   VERBOSE: 3
 };
 const DEBUG_LEVEL = DEBUG_LEVELS.DEBUG;
-const SKIP_PROPS = ['TABLE_SCHEMA', 'ORDINAL_POSITION'];
+const SKIP_PROPS = ['TABLE_SCHEMA', 'ORDINAL_POSITION', 'GENERATION_EXPRESSION'];
 const DIFF_OUTCOMES = {
   SAME: 'identical',
   A_NOT_B: 'left-only',
@@ -35,7 +35,8 @@ let report = {
   db2Name: null,
   tables: [
     // {name: 'foo', outcome: 2, columnDiffs: []}
-  ]
+  ],
+  routines: []
 };
 
 let query = async (conn, sql, params) => {
@@ -48,7 +49,9 @@ let query = async (conn, sql, params) => {
   });
 };
 
-const compare = async (db1, db2) => {
+const compare = async (databases, db1Name, db2Name) => {
+  let db1 = databases[db1Name];
+  let db2 = databases[db2Name];
   // get tables
   const connection1 = mysql.createConnection({
     host     : db1.host,
@@ -73,6 +76,9 @@ const compare = async (db1, db2) => {
   let colSql = 'select * from information_schema.columns where TABLE_SCHEMA = ?'
   let db1Cols = await query(connection1, colSql, [db1.database]);
   let db2Cols = await query(connection2, colSql, [db2.database]);
+  let routinesSql = 'select * from information_schema.routines where ROUTINE_SCHEMA = ?';
+  let db1Routines = await query(connection1, routinesSql, [db1.database]);
+  let db2Routines = await query(connection2, routinesSql, [db2.database]);
 
   const compareCols = async (tableName) => {
     // compare columns
@@ -114,6 +120,27 @@ const compare = async (db1, db2) => {
     return;
   };
 
+  const compareRoutines = (routineName) => {
+    let db1Routine = db1Routines.filter(val => { return val.ROUTINE_NAME == routineName });
+    let existsInDb1 =  (db1Routine.length == 1);
+    if (existsInDb1) db1Routine = db1Routine[0];
+
+    let db2Routine = db2Routines.filter(val => { return val.ROUTINE_NAME == routineName });
+    let existsInDb2 =  (db2Routine.length == 1);
+    if (existsInDb2) db2Routine = db2Routine[0];
+
+    if (existsInDb1 && !existsInDb2)
+      report.routines.push({name: db1Routine.ROUTINE_NAME, type: db1Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.A_NOT_B, last_altered_left: db1Routine.LAST_ALTERED});
+    else if (existsInDb2 && !existsInDb1)
+      report.routines.push({name: db2Routine.ROUTINE_NAME, type: db2Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.B_NOT_A, last_altered_right: db2Routine.LAST_ALTERED});
+    else {
+      if (db1Routine.ROUTINE_DEFINITION != db2Routine.ROUTINE_DEFINITION)
+        report.routines.push({name: db1Routine.ROUTINE_NAME, type: db1Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.DIFFERENT, last_altered_left: db1Routine.LAST_ALTERED, last_altered_right: db2Routine.LAST_ALTERED});
+      else
+        report.routines.push({name: db1Routine.ROUTINE_NAME, type: db1Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.SAME, last_altered_left: db1Routine.LAST_ALTERED, last_altered_right: db2Routine.LAST_ALTERED});
+    }
+  };
+
   for (let table of db1Tables) {
     let existsInDb2 = db2Tables.filter(val => { return val.TABLE_NAME == table.TABLE_NAME }).length == 1;
     if (!existsInDb2) {
@@ -131,6 +158,17 @@ const compare = async (db1, db2) => {
       // console.log(`table ${table.TABLE_NAME} exists in ${db2Name} but not in ${db1Name}`);
       report.tables.push({name: table.TABLE_NAME, outcome: DIFF_OUTCOMES.B_NOT_A});
     }
+  }
+
+  let allRoutines = [];
+  for (let routine of db1Routines) {
+    allRoutines.push(routine.ROUTINE_NAME);
+  }
+  for (let routine of db2Routines) {
+    allRoutines.push(routine.ROUTINE_NAME);
+  }
+  for (let routine of allRoutines) {
+    compareRoutines(routine);
   }
 };
 
@@ -180,7 +218,7 @@ const outputReport = async (db1, db2) => {
 
 module.exports = async (databases, db1, db2) => {
   try {
-    await compare(databases[db1], databases[db2]);
+    await compare(databases, db1, db2);
     await outputReport(db1, db2);
     return null;
   }

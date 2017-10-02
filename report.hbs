@@ -14,14 +14,31 @@
     .right-only { color: purple; }
     .different { color: red; }
   </style>
+  <script>
+    function toggleIdentical(value) {
+      var hide = document.getElementById('hideIdentical').checked;
+      document.querySelectorAll('.identical').forEach(function(el) {
+        el.style.display = hide ? 'none' : 'inherit';
+      });
+    }
+  </script>
 </head>
 <body>
-  
-  <section>
 
+  <section>
     <h1>sqlcomp report</h1>
     <h2>comparing `{{ db1Name }}` and `{{ db2Name }}`</h2>
+  </section>
 
+  <section>
+    <label>
+      <input id="hideIdentical" type="checkbox" onclick="toggleIdentical()" />
+      Hide Identical
+    </label>
+  </section>
+
+  <section>
+    <div class="section-title">Tables</div>
     <table class="pure-table">
       <thead>
         <tr>
@@ -30,7 +47,6 @@
         </tr>
       </thead>
       <tbody>
-
         {{#each tables }}
         <tr class="{{outcome}}">
           <td>{{ name }}</td>
@@ -69,6 +85,31 @@
       </tbody>
     </table>
   </section>
+
+  <section>
+    <div class="section-title">Routines</div>
+    <table class="pure-table">
+      <thead>
+        <tr>
+          <th>routine_name</th>
+          <th>type</th>
+          <th>comparison</th>
+          <th>last_altered left</th>
+          <th>last_altered right</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each routines }}
+        <tr class="{{outcome}}">
+          <td>{{ name }}</td>
+          <td>{{ type }}</td>
+          <td>{{ outcome }}</td>
+          <td>{{ last_altered_left }}</td>
+          <td>{{ last_altered_right }}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>  
 
 </body>
 </html>

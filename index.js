@@ -8,7 +8,7 @@ const fs = require('fs-extra');
 const validateSpec = (spec) => {
   if (!spec.driver) return new Error('Spec is missing `driver`');
   if (!spec.user) return new Error('Spec is missing `user`');
-  if (!spec.password) return new Error('Spec is missing `password`');
+  if (!spec.password && spec.password != "") return new Error('Spec is missing `password`');
   if (!spec.host) return new Error('Spec is missing `host`');
   if (!spec.database) return new Error('Spec is missing `database`');
   if (!spec.port) return new Error('Spec is missing `port`');
