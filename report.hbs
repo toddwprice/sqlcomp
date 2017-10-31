@@ -6,33 +6,80 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>sqlcomp report</title>
   <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="diffview.css"/>
+	<script type="text/javascript" src="diffview.js"></script>
+	<script type="text/javascript" src="difflib.js"></script>
   <style>
     section { margin: 50px 60px; }
     td { vertical-align: top;}
-    .identical { color: #ccc; }
+    tr { cursor: pointer; }
+    tr:hover { background-color: #e3e3e3; }
+    .identical { color: #ccc; display: none; }
     .left-only { color: blue; }
     .right-only { color: purple; }
     .different { color: red; }
+    .db-name { font-weight: bold; }
+    textarea { width: 500px; height: 300px;}
   </style>
   <script>
+    var leftDefinition, rightDefinition, parentCell, name, viewType = 0;
+
     function toggleIdentical(value) {
       var hide = document.getElementById('hideIdentical').checked;
       document.querySelectorAll('.identical').forEach(function(el) {
         el.style.display = hide ? 'none' : 'inherit';
       });
     }
+
+    function updateComparison(parentCell) {
+      name = parentCell.querySelector('.name').innerText;
+      leftDefinition = parentCell.querySelector('.left').innerText;
+      rightDefinition = parentCell.querySelector('.right').innerText;
+      renderDiff();
+    }
+
+    function updateView(_viewType) {
+      viewType = _viewType;
+      renderDiff();
+    }
+
+    function renderDiff() {
+      var base = difflib.stringAsLines(leftDefinition),
+          newtxt = difflib.stringAsLines(rightDefinition),
+          sm = new difflib.SequenceMatcher(base, newtxt),
+          opcodes = sm.get_opcodes(),
+          diffoutputdiv = document.getElementById("diffoutput");
+
+      diffoutputdiv.innerHTML = "";
+
+      diffoutputdiv.appendChild(diffview.buildView({
+        baseTextLines: base,
+        newTextLines: newtxt,
+        opcodes: opcodes,
+        baseTextName: document.getElementById('db1Name').innerText,
+        newTextName: document.getElementById('db2Name').innerText,
+        contextSize: null,
+        viewType: viewType
+      }));
+
+      let elName = document.getElementById('name');
+      elName.innerText = name;
+      elName.scrollIntoView();
+      
+    }
+
   </script>
 </head>
 <body>
 
   <section>
     <h1>sqlcomp report</h1>
-    <h2>comparing `{{ db1Name }}` and `{{ db2Name }}`</h2>
+    <h2>comparing <span id="db1Name" class="db-name">{{ db1Name }}</span> and <span id="db2Name" class="db-name">{{ db2Name }}</span></h2>
   </section>
 
   <section>
     <label>
-      <input id="hideIdentical" type="checkbox" onclick="toggleIdentical()" />
+      <input id="hideIdentical" type="checkbox" onclick="toggleIdentical()" checked="checked" />
       Hide Identical
     </label>
   </section>
@@ -100,16 +147,33 @@
       </thead>
       <tbody>
         {{#each routines }}
-        <tr class="{{outcome}}">
-          <td>{{ name }}</td>
+        <tr class="{{outcome}}" onclick="updateComparison(this)">
+          <td class="name">{{ name }}</td>
           <td>{{ type }}</td>
           <td>{{ outcome }}</td>
           <td>{{ last_altered_left }}</td>
           <td>{{ last_altered_right }}</td>
+          <td style="display:none">
+            <div class="left">{{ left_definition }}</div>
+            <div class="right">{{ right_definition }}</div>
+          </td>
         </tr>
         {{/each}}
       </tbody>
     </table>  
+  </section>
+
+  <section id="compareSection">
+    <h2><a id="name" name="comparison"></a></h2>
+
+    <div class="viewType">
+      <input type="radio" name="_viewtype" id="sidebyside" onclick="updateView(0);" /> <label for="sidebyside">Side by Side Diff</label>
+      &nbsp; &nbsp;
+      <input type="radio" name="_viewtype" id="inline" onclick="updateView(1);" /> <label for="inline">Inline Diff</label>
+    </div>
+    <div id="diffoutput"> </div>
+
+  </section>
 
 </body>
 </html>

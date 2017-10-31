@@ -130,14 +130,40 @@ const compare = async (databases, db1Name, db2Name) => {
     if (existsInDb2) db2Routine = db2Routine[0];
 
     if (existsInDb1 && !existsInDb2)
-      report.routines.push({name: db1Routine.ROUTINE_NAME, type: db1Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.A_NOT_B, last_altered_left: db1Routine.LAST_ALTERED});
+      report.routines.push({
+        name: db1Routine.ROUTINE_NAME, 
+        type: db1Routine.ROUTINE_TYPE, 
+        outcome: DIFF_OUTCOMES.A_NOT_B, 
+        last_altered_left: db1Routine.LAST_ALTERED,
+        left_definition: db1Routine.ROUTINE_DEFINITION
+      });
     else if (existsInDb2 && !existsInDb1)
-      report.routines.push({name: db2Routine.ROUTINE_NAME, type: db2Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.B_NOT_A, last_altered_right: db2Routine.LAST_ALTERED});
+      report.routines.push({
+        name: db2Routine.ROUTINE_NAME, 
+        type: db2Routine.ROUTINE_TYPE, 
+        outcome: DIFF_OUTCOMES.B_NOT_A, 
+        last_altered_right: db2Routine.LAST_ALTERED,
+        right_definition: db2Routine.ROUTINE_DEFINITION
+      });
     else {
       if (db1Routine.ROUTINE_DEFINITION != db2Routine.ROUTINE_DEFINITION)
-        report.routines.push({name: db1Routine.ROUTINE_NAME, type: db1Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.DIFFERENT, last_altered_left: db1Routine.LAST_ALTERED, last_altered_right: db2Routine.LAST_ALTERED});
+        report.routines.push({
+          name: db1Routine.ROUTINE_NAME, 
+          type: db1Routine.ROUTINE_TYPE, 
+          outcome: DIFF_OUTCOMES.DIFFERENT, 
+          last_altered_left: db1Routine.LAST_ALTERED, 
+          last_altered_right: db2Routine.LAST_ALTERED,
+          left_definition: db1Routine.ROUTINE_DEFINITION,
+          right_definition: db2Routine.ROUTINE_DEFINITION
+        });
       else
-        report.routines.push({name: db1Routine.ROUTINE_NAME, type: db1Routine.ROUTINE_TYPE, outcome: DIFF_OUTCOMES.SAME, last_altered_left: db1Routine.LAST_ALTERED, last_altered_right: db2Routine.LAST_ALTERED});
+        report.routines.push({
+          name: db1Routine.ROUTINE_NAME, 
+          type: db1Routine.ROUTINE_TYPE, 
+          outcome: DIFF_OUTCOMES.SAME, 
+          last_altered_left: db1Routine.LAST_ALTERED, 
+          last_altered_right: db2Routine.LAST_ALTERED
+        });
     }
   };
 
@@ -162,10 +188,10 @@ const compare = async (databases, db1Name, db2Name) => {
 
   let allRoutines = [];
   for (let routine of db1Routines) {
-    allRoutines.push(routine.ROUTINE_NAME);
+    if (allRoutines.indexOf(routine.ROUTINE_NAME) == -1) allRoutines.push(routine.ROUTINE_NAME);
   }
   for (let routine of db2Routines) {
-    allRoutines.push(routine.ROUTINE_NAME);
+    if (allRoutines.indexOf(routine.ROUTINE_NAME) == -1) allRoutines.push(routine.ROUTINE_NAME);
   }
   for (let routine of allRoutines) {
     compareRoutines(routine);
