@@ -1,6 +1,6 @@
 {
   "name": "sqlcomp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Compares MySQL databases using info in `information_schema` queries",
   "main": "index.js",
   "scripts": {
