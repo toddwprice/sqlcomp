@@ -4,6 +4,7 @@
   "description": "Compares MySQL databases using info in `information_schema` queries",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js ../internal-api/config/database.json staging production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "toddwprice",
@@ -12,11 +13,11 @@
     "sqlcomp": "./index.js"
   },
   "dependencies": {
-    "chalk": "^2.1.0",
-    "commander": "^2.11.0",
-    "fs-extra": "^4.0.2",
-    "handlebars": "^4.0.10",
-    "mysql": "^2.14.1",
+    "chalk": "^2.4.1",
+    "commander": "^2.19.0",
+    "fs-extra": "^7.0.0",
+    "handlebars": "^4.0.12",
+    "mysql": "^2.16.0",
     "open": "^0.0.5"
   }
 }
