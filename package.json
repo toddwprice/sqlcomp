@@ -4,7 +4,7 @@
   "description": "Compares MySQL databases using info in `information_schema` queries",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js ../internal-api/config/database.json staging production",
+    "start": "node index.js ../api/config/database.json staging production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "toddwprice",
